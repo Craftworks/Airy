@@ -2,8 +2,32 @@ package Airy;
 
 use strict;
 use warnings;
+use Airy::Util;
 
 our $VERSION = '0.001';
+
+sub import {
+    my $class  = shift;
+    my $caller = caller 0;
+
+    strict->import;
+    warnings->import;
+
+    if ( 0 < @_ && $_[0] eq '-base' ) {
+
+        no strict 'refs';
+        unshift @{"$caller\::ISA"}, 'Airy::Base';
+
+        ${"$caller\::RootDir"} = Airy::Util::class2dir($caller);
+    }
+}
+
+package Airy::Base;
+
+sub new {
+    my $class = shift;
+    bless { 'config' => {}, @_ }, $class;
+}
 
 1;
 
