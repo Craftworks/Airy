@@ -18,7 +18,8 @@ sub import {
         no strict 'refs';
         unshift @{"$caller\::ISA"}, 'Airy::Base';
 
-        ${"$caller\::RootDir"} = Airy::Util::class2dir($caller);
+        my $root_dir = Airy::Util::class2dir($caller);
+        *{"$caller\::root_dir"} = sub { $root_dir };
     }
 }
 

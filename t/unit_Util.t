@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 use Test::More;
-use Cwd;
+use FindBin;
 
-is($My::App::API::RootDir, getcwd, 'class2dir');
+is(My::App::API->root_dir, $FindBin::Bin, 'class2dir');
 my $obj = new_ok('My::App::API');
 isa_ok($obj, 'Airy::Base');
 
@@ -19,7 +19,7 @@ done_testing;
 {
     package My::App::API;
     BEGIN {
-        $INC{'My::App::API.pm'} = __FILE__;
+        $INC{'My/App/API.pm'} = 't/lib/My/App/API.pm';
     }
     use Airy -base;
 }
