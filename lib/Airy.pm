@@ -3,6 +3,7 @@ package Airy;
 use strict;
 use warnings;
 use Airy::Util;
+use Airy::Config;
 
 our $VERSION = '0.001';
 
@@ -27,7 +28,13 @@ package Airy::Base;
 
 sub new {
     my $class = shift;
-    bless { 'config' => {}, @_ }, $class;
+    my %args = @_ == 1 ? %{ +shift } : @_;
+    $args{'config'} = Airy::Config->get($class);
+    bless \%args, $class;
+}
+
+sub config {
+    shift->{'config'};
 }
 
 1;
