@@ -24,8 +24,7 @@ sub load {
 
     my $loader_class = $ENV{'AIRY_CONFIG_LOADER'} || $Loader;
     unless ( Airy::Util::is_class_loaded($loader_class) ) {
-        eval "require $loader_class" or die $@;
-        $loader_class->import;
+        Airy::Util::load_class($loader_class);
     }
 
     my $config_path = File::Spec->catfile($caller->root_dir, $ConfDir);
