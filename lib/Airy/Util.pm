@@ -28,10 +28,14 @@ sub is_class_loaded {
     return defined $INC{"$class.pm"};
 }
 
-sub load_class {
-    my $class = shift;
-    eval "require $class" or die $@;
-    $class->import;
+{
+    my $loaded;
+    sub load_class {
+        my $class = shift;
+        return $class if $loaded->{ $class }++;
+        eval "require $class" or die $@;
+        $class->import;
+    }
 }
 
 1;
