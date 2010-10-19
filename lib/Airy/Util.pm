@@ -2,6 +2,7 @@ package Airy::Util;
 
 use strict;
 use warnings;
+use Carp::Clan;
 use File::Spec;
 
 sub class2dir($) {
@@ -33,7 +34,7 @@ sub is_class_loaded {
     sub load_class {
         my $class = shift;
         return $class if $loaded->{ $class }++;
-        eval "require $class" or die $@;
+        eval "require $class" or confess $@;
         $class->import;
     }
 }
