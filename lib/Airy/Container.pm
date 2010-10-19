@@ -4,14 +4,16 @@ use strict;
 use warnings;
 use Airy::Util;
 
-our $constructor = +{};
-our $instance    = +{};
+my $constructor = +{};
+my $instance    = +{};
 
 sub get {
     my ( $class, $package, @args ) = @_;
 
     unless ( $instance->{ $package } ) {
-        Airy::Util::load_class($package);
+        unless ( Airy::Util::is_class_loaded($package) ) {
+            Airy::Util::load_class($package);
+        }
         $instance->{ $package } = $constructor->{ $package }
             ? $constructor->{ $package }->($package, @args)
             : $package->new(@args);
