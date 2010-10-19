@@ -5,7 +5,7 @@ all_from 'lib/Airy.pm';
 author   'Craftworks <craftwork at cpan org>';
 license  'perl';
 
-build_requires 'Test::More';
+test_requires 'Test::More' => 0.96;
 
 auto_install;
 
