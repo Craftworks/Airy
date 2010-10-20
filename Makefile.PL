@@ -7,6 +7,8 @@ license  'perl';
 
 test_requires 'Test::More' => 0.96;
 
+tests 't/*.t t/*/*.t';
+
 auto_install;
 
 WriteAll;
