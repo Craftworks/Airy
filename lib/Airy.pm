@@ -3,6 +3,7 @@ package Airy;
 use strict;
 use warnings;
 use Airy::Util;
+use Airy::Container;
 use Airy::Config;
 
 our $VERSION = '0.001';
@@ -14,13 +15,15 @@ sub import {
     strict->import;
     warnings->import;
 
-    if ( 0 < @_ && $_[0] eq '-base' ) {
+    no strict 'refs';
+    unshift @{"$caller\::ISA"}, 'Airy::Base';
 
-        no strict 'refs';
-        unshift @{"$caller\::ISA"}, 'Airy::Base';
+    my $root_dir = Airy::Util::class2dir($caller);
+    *{"$caller\::root_dir"} = sub { $root_dir };
 
-        my $root_dir = Airy::Util::class2dir($caller);
-        *{"$caller\::root_dir"} = sub { $root_dir };
+    if ( 0 < @_ && $_[0] eq '-app' ) {
+        *{"$caller\::app_class"} = sub { $caller };
+        *{"$caller\::get"} = *Airy::Container::get;
     }
 }
 
@@ -29,12 +32,16 @@ package Airy::Base;
 sub new {
     my $class = shift;
     my %args = @_ == 1 ? %{ +shift } : @_;
-    $args{'config'} = Airy::Config->get($class);
+    if ( $class->can('app_class') ) {
+        Airy::Config->app_class($class->app_class);
+        Airy::Config->load;
+    }
     bless \%args, $class;
 }
 
 sub config {
-    shift->{'config'};
+    my $self = shift;
+    Airy::Config->get(ref $self);
 }
 
 1;

@@ -2,29 +2,28 @@ use strict;
 use warnings;
 use Test::More;
 
-{
-    package My::App::API;
-    BEGIN {
-        $INC{'My/App/API.pm'} = 't/lib/My/App/API.pm';
-    }
-    use Airy -base;
-}
+local $ENV{'AIRY_HOME'} = 't';
 
-{
-    my $obj = new_ok('My::App::API');
-    is($obj->config->{'config_loader'}, 'bundle', 'load config');
-    is($obj->config->{'override'}, 'development', 'override');
-}
+use_ok('Airy::Config');
 
-{
-    {
-        package MyApp::ConfigLoader;
-        sub load_config { +{ 'My::App::API' => 'my_loader' } }
-    }
-    local $ENV{'AIRY_CONFIG_LOADER'} = 'MyApp::ConfigLoader';
-    local $Airy::Config::Loaded = 0;
-    my $obj = new_ok('My::App::API');
-    is($obj->config, 'my_loader', 'using original');
-}
+subtest 'load' => sub {
+    is_deeply(Airy::Config->get_all, +{}, 'before load');
+    Airy::Config->load;
+    is_deeply(Airy::Config->get_all, +{ 'name' => 'My::App' }, 'after load');
+};
+
+subtest 'load specified env' => sub {
+    local $ENV{'AIRY_ENV'} = 'devel';
+    Airy::Config->load;
+    is_deeply(Airy::Config->get_all, +{ 'env' => 'devel' });
+};
+
+subtest 'get' => sub {
+    local $ENV{'AIRY_ENV'} = 'get';
+    Airy::Config->app_class('My::App');
+    Airy::Config->load;
+    is_deeply(Airy::Config->get('My::App::API'), 'api', 'API');
+    is_deeply(Airy::Config->get('My::App::API::Foo'), 'foo', 'API::Foo');
+};
 
 done_testing;
