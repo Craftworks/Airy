@@ -20,8 +20,13 @@ sub load {
     my $conf = $ENV{'AIRY_CONFIG_PATH'} || 'conf';
     my $path = File::Spec->catfile($home, $conf, "$env.pl");
 
-    return unless $env;
-    $vars = do $path or die qq{Couldn't load configuration file "$path"};
+    if ( length $env ) {
+        $vars = do $path or die qq{Couldn't load configuration file "$path"};
+    }
+    else {
+        warn 'configuration file was not specified';
+        return;
+    }
 }
 
 sub get_all {
