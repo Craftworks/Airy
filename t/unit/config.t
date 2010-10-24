@@ -7,6 +7,7 @@ local $ENV{'AIRY_HOME'} = 't';
 use_ok('Airy::Config');
 
 subtest 'load' => sub {
+    local $ENV{'AIRY_ENV'} = 'base';
     is_deeply(Airy::Config->get_all, +{}, 'before load');
     Airy::Config->load;
     is_deeply(Airy::Config->get_all, +{ 'name' => 'My::App' }, 'after load');

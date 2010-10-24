@@ -18,8 +18,8 @@ subtest 'class2dir' => sub {
 };
 
 subtest 'is_class_loaded' => sub {
+    ok(Airy::Util::is_class_loaded('Foo'), 'is_class_loaded without pm');
     ok(Airy::Util::is_class_loaded('Airy'), 'is_class_loaded with pm');
-    ok(Airy::Util::is_class_loaded('Airy::Base'), 'is_class_loaded without pm');
     ok(!Airy::Util::is_class_loaded('Unknown'), 'is_class_loaded not loaded yet');
 };
 

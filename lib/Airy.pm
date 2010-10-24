@@ -2,11 +2,14 @@ package Airy;
 
 use strict;
 use warnings;
+use Airy::Object;
 use Airy::Util;
 use Airy::Container;
 use Airy::Config;
 
 our $VERSION = '0.001';
+$VERSION = eval $VERSION;
+our $AUTHORITY = 'cpan:CRAFTWORK';
 
 sub import {
     my $class  = shift;
@@ -16,7 +19,7 @@ sub import {
     warnings->import;
 
     no strict 'refs';
-    unshift @{"$caller\::ISA"}, 'Airy::Base';
+    unshift @{"$caller\::ISA"}, 'Airy::Object';
 
     my $root_dir = Airy::Util::class2dir($caller);
     *{"$caller\::root_dir"} = sub { $root_dir };
@@ -24,24 +27,10 @@ sub import {
     if ( 0 < @_ && $_[0] eq '-app' ) {
         *{"$caller\::app_class"} = sub { $caller };
         *{"$caller\::get"} = *Airy::Container::get;
-    }
-}
 
-package Airy::Base;
-
-sub new {
-    my $class = shift;
-    my %args = @_ == 1 ? %{ +shift } : @_;
-    if ( $class->can('app_class') ) {
-        Airy::Config->app_class($class->app_class);
+        Airy::Config->app_class($caller->app_class);
         Airy::Config->load;
     }
-    bless \%args, $class;
-}
-
-sub config {
-    my $self = shift;
-    Airy::Config->get(ref $self);
 }
 
 1;

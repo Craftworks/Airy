@@ -15,11 +15,12 @@ sub app_class {
 sub load {
     my ( $class ) = @_;
 
-    my $env  = $ENV{'AIRY_ENV'} || $ENV{'PLACK_ENV'} || 'base';
+    my $env  = $ENV{'AIRY_ENV'} || $ENV{'PLACK_ENV'} || '';
     my $home = $ENV{'AIRY_HOME'} || '.';
     my $conf = $ENV{'AIRY_CONFIG_PATH'} || 'conf';
     my $path = File::Spec->catfile($home, $conf, "$env.pl");
 
+    return unless $env;
     $vars = do $path or die qq{Couldn't load configuration file "$path"};
 }
 
