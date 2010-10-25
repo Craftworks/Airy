@@ -15,14 +15,26 @@ local $ENV{'AIRY_HOME'} = 't';
     sub _context { (caller(0))[8,9] }
 }
 
-{
+use_ok('Airy');
+
+my $warn = do {
     package My::App;
+    my ($stderr, $buffer);
+
+    BEGIN {
+        $stderr = *STDERR;
+        open my $fh, '>', \$buffer;
+        *STDERR = $fh;
+    }
+
     use Airy -app => ( 'config' => +{
         'Foo' => 'foo',
     });
-}
 
-use_ok('Airy');
+    *STDERR = $stderr;
+    $buffer;
+};
+is($warn, qq{missing configuration for "Log::Dispatch". use default configuration.\n});
 
 subtest 'import' => sub {
     my ($hints, $bitmask) = Foo->context;

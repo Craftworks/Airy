@@ -6,6 +6,7 @@ use Airy::Object;
 use Airy::Util;
 use Airy::Container;
 use Airy::Config;
+use Airy::Log;
 
 our $VERSION = '0.001';
 $VERSION = eval $VERSION;
@@ -39,6 +40,8 @@ sub import {
         else {
             Airy::Config->load;
         }
+
+        Airy::Log->setup;
     }
 }
 
