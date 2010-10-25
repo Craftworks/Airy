@@ -4,27 +4,41 @@ use Test::More;
 
 local $ENV{'AIRY_HOME'} = 't';
 
-use_ok('Airy::Config');
+BEGIN {
+    use_ok('Airy::Config');
+}
+
+my $config = 'Airy::Config';
+
+subtest 'set' => sub {
+    is_deeply($config->get_all, +{}, 'before set');
+    $config->set({ 'foo' => 1 });
+    is_deeply($config->get_all, +{ 'foo' => 1 }, 'after set');
+
+    $config->set('Foo' => { 'foo' => 2 });
+    is_deeply($config->get('Foo'), +{ 'foo' => 2 }, 'set with name');
+};
 
 subtest 'load' => sub {
     local $ENV{'AIRY_ENV'} = 'base';
-    is_deeply(Airy::Config->get_all, +{}, 'before load');
-    Airy::Config->load;
-    is_deeply(Airy::Config->get_all, +{ 'name' => 'My::App' }, 'after load');
+    $config->set(+{});
+    is_deeply($config->get_all, +{}, 'before load');
+    $config->load;
+    is_deeply($config->get_all, +{ 'name' => 'My::App' }, 'after load');
 };
 
 subtest 'load specified env' => sub {
     local $ENV{'AIRY_ENV'} = 'devel';
-    Airy::Config->load;
-    is_deeply(Airy::Config->get_all, +{ 'env' => 'devel' });
+    $config->load;
+    is_deeply($config->get_all, +{ 'env' => 'devel' });
 };
 
 subtest 'get' => sub {
     local $ENV{'AIRY_ENV'} = 'get';
-    Airy::Config->app_class('My::App');
-    Airy::Config->load;
-    is_deeply(Airy::Config->get('My::App::API'), 'api', 'API');
-    is_deeply(Airy::Config->get('My::App::API::Foo'), 'foo', 'API::Foo');
+    $config->app_class('My::App');
+    $config->load;
+    is_deeply($config->get('My::App::API'), 'api', 'API');
+    is_deeply($config->get('My::App::API::Foo'), 'foo', 'API::Foo');
 };
 
 done_testing;

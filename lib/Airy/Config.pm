@@ -35,8 +35,13 @@ sub get_all {
 
 sub get {
     my ( $class, $caller ) = @_;
-    $caller =~ s/^$app_class\:://o;
+    $caller =~ s/^$app_class\:://;
     $vars->{ $caller };
+}
+
+sub set {
+    my $class = shift;
+    @_ == 2 ? ( $vars->{ $_[0] } = $_[1] ) : ( $vars = $_[0] );
 }
 
 1;

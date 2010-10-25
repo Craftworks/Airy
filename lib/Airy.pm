@@ -25,11 +25,20 @@ sub import {
     *{"$caller\::root_dir"} = sub { $root_dir };
 
     if ( 0 < @_ && $_[0] eq '-app' ) {
+        shift;
+
         *{"$caller\::app_class"} = sub { $caller };
         *{"$caller\::get"} = *Airy::Container::get;
 
         Airy::Config->app_class($caller->app_class);
-        Airy::Config->load;
+
+        my %args = @_;
+        if ( $args{'config'} ) {
+            Airy::Config->set($args{'config'});
+        }
+        else {
+            Airy::Config->load;
+        }
     }
 }
 

@@ -17,7 +17,9 @@ local $ENV{'AIRY_HOME'} = 't';
 
 {
     package My::App;
-    use Airy -app;
+    use Airy -app => ( 'config' => +{
+        'Foo' => 'foo',
+    });
 }
 
 use_ok('Airy');
@@ -36,6 +38,10 @@ subtest 'context' => sub {
     my $api = $app->get('Foo');
     can_ok($api, 'root_dir');
     can_ok($api, 'config');
+};
+
+subtest 'specify config' => sub {
+    is_deeply(Airy::Config->get_all, +{ 'Foo' => 'foo' });
 };
 
 done_testing;
