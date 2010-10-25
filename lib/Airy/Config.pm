@@ -24,7 +24,8 @@ sub load {
         $vars = do $path or die qq{Couldn't load configuration file "$path"};
     }
     else {
-        warn 'configuration file was not specified';
+        warn qq{configuration file was not specified\n}
+            unless $ENV{'HARNESS_ACTIVE'};
         return;
     }
 }

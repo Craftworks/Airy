@@ -34,12 +34,9 @@ sub import {
         Airy::Config->app_class($caller->app_class);
 
         my %args = @_;
-        if ( $args{'config'} ) {
-            Airy::Config->set($args{'config'});
-        }
-        else {
-            Airy::Config->load;
-        }
+        $args{'config'}
+            ? Airy::Config->set($args{'config'})
+            : Airy::Config->load;
 
         Airy::Log->setup;
     }
