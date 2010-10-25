@@ -2,6 +2,7 @@ package Airy::Log;
 
 use strict;
 use warnings;
+use POSIX;
 use Log::Dispatch;
 use Airy::Config;
 
@@ -13,20 +14,28 @@ sub setup {
     *Log::Dispatch::warn  = *Log::Dispatch::warning;
     *Log::Dispatch::fatal = *Log::Dispatch::emergency;
 
-    my $conf = Airy::Config->get('Log::Dispatch');
-    unless ( $conf ) {
-        warn qq{missing configuration for "Log::Dispatch". use default configuration.\n};
-        $conf = +{
+    my $config = Airy::Config->get('Log::Dispatch');
+    unless ( $config ) {
+        warn qq{missing configuration for "Log::Dispatch". use default configuration.\n}
+            unless $ENV{'HARNESS_ACTIVE'};
+
+        $config = +{
             'outputs' => [ [
-                'class'     => 'Log::Dispatch::Screen',
+                'Screen',
                 'min_level' => 'debug',
                 'stderr'    => 1,
-                'format'    => '%d{%Y-%m-%d %H:%M:%S} [%p] %m at %P line %L%n',
+                'newline'   => 1,
             ] ],
+            'callbacks' => sub {
+                my %log = @_;
+                sprintf '%s [%s] %s',
+                    POSIX::strftime('%F %T', localtime),
+                    @log{qw/level message/};
+            },
         };
     }
 
-    $logger = Log::Dispatch->new(%$conf);
+    $logger = Log::Dispatch->new(%$config);
 }
 
 sub logger {

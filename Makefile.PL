@@ -5,6 +5,8 @@ all_from 'lib/Airy.pm';
 author   'Craftworks <craftwork at cpan org>';
 license  'perl';
 
+requires 'Log::Dispatch' => 2.26;
+
 test_requires 'Test::More' => 0.96;
 
 tests 't/*.t t/*/*.t';
