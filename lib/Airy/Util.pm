@@ -2,7 +2,7 @@ package Airy::Util;
 
 use strict;
 use warnings;
-use Carp::Clan;
+use Carp;
 use File::Spec;
 
 sub class2dir($) {
