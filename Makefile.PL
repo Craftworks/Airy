@@ -8,6 +8,7 @@ license  'perl';
 requires 'Log::Dispatch' => 2.26;
 
 test_requires 'Test::More' => 0.96;
+test_requires 'Test::Fatal';
 
 tests 't/*.t t/*/*.t';
 

@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
-use Test::Exception;
+use Test::Fatal;
 use File::Spec;
 use FindBin;
 use Airy::Util;
@@ -25,8 +25,17 @@ subtest 'is_class_loaded' => sub {
 
 subtest 'load_class' => sub {
     ok(!$INC{'Data/Dumper.pm'}, 'not loaded yet');
-    lives_ok { Airy::Util::load_class('Data::Dumper') } 'load class';
+    is(
+        exception { Airy::Util::load_class('Data::Dumper') },
+        undef,
+        'load class'
+    );
     ok($INC{'Data/Dumper.pm'}, 'loaded');
+    isnt(
+        exception { Airy::Util::load_class('Doesnt::Exists') },
+        undef,
+        'failed to load class'
+    );
 };
 
 done_testing;
