@@ -5,6 +5,13 @@ use warnings;
 use Carp;
 use File::Spec;
 
+my $app_class;
+
+sub app_class {
+    my ($class, $name) = @_;
+    $name ? $app_class = $name : $app_class;
+}
+
 sub class2dir($) {
     my $class = shift;
     $class =~ s{::}{/}go;

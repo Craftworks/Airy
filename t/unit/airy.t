@@ -39,6 +39,10 @@ subtest 'context' => sub {
     can_ok($api, 'config');
 };
 
+subtest 'application class' => sub {
+    is(Airy::Util->app_class, 'My::App');
+};
+
 subtest 'specify config' => sub {
     is_deeply(Airy::Config->get_all, +{ 'Foo' => 'foo' });
 };

@@ -1,11 +1,13 @@
 use strict;
 use warnings;
 use Test::More;
+use Airy::Util;
 
 local $ENV{'AIRY_HOME'} = 't';
 
 BEGIN {
     use_ok('Airy::Config');
+    Airy::Util->app_class('My::App');
 }
 
 my $config = 'Airy::Config';
@@ -35,7 +37,6 @@ subtest 'load specified env' => sub {
 
 subtest 'get' => sub {
     local $ENV{'AIRY_ENV'} = 'get';
-    $config->app_class('My::App');
     $config->load;
     is_deeply($config->get('My::App::API'), 'api', 'API');
     is_deeply($config->get('My::App::API::Foo'), 'foo', 'API::Foo');

@@ -3,14 +3,9 @@ package Airy::Config;
 use strict;
 use warnings;
 use File::Spec;
+use Airy::Util;
 
 my $vars = +{};
-my $app_class = '';
-
-sub app_class {
-    my ( $class, $name ) = @_;
-    $name ? $app_class = $name : $app_class;
-}
 
 sub load {
     my ( $class ) = @_;
@@ -36,6 +31,7 @@ sub get_all {
 
 sub get {
     my ( $class, $caller ) = @_;
+    my $app_class = Airy::Util->app_class;
     $caller =~ s/^$app_class\:://;
     $vars->{ $caller };
 }

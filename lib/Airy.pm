@@ -28,10 +28,9 @@ sub import {
     if ( 0 < @_ && $_[0] eq '-app' ) {
         shift;
 
-        *{"$caller\::app_class"} = sub { $caller };
-        *{"$caller\::get"} = *Airy::Container::get;
+        Airy::Util->app_class($caller);
 
-        Airy::Config->app_class($caller->app_class);
+        *{"$caller\::get"} = *Airy::Container::get;
 
         my %args = @_;
         $args{'config'}

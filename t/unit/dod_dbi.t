@@ -2,14 +2,16 @@ use strict;
 use warnings;
 use Test::More;
 use Airy::Config;
+use Airy::Util;
 
 BEGIN {
     use_ok('Airy::DOD::DBI');
+    Airy::Util->app_class('Airy');
 }
 
 {
     Airy::Config->set({
-        'Airy::DOD::DBI' => {
+        'DOD::DBI' => {
             'connect_info' => [ 'dbi:File:', '', '', +{} ],
         },
     });

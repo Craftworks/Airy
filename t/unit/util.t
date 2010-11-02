@@ -11,6 +11,12 @@ use Airy::Util;
     use Airy;
 }
 
+subtest 'app_class' => sub {
+    is(Airy::Util->app_class, undef, 'not set yet');
+    Airy::Util->app_class('My::App');
+    is(Airy::Util->app_class, 'My::App', 'set');
+};
+
 subtest 'class2dir' => sub {
     local $INC{'My/App/API.pm'} = 't/lib/My/App/API.pm';
     my $expected = File::Spec->rel2abs('t');
@@ -24,13 +30,13 @@ subtest 'is_class_loaded' => sub {
 };
 
 subtest 'load_class' => sub {
-    ok(!$INC{'Data/Dumper.pm'}, 'not loaded yet');
+    ok(!$INC{'Benchmark.pm'}, 'not loaded yet');
     is(
-        exception { Airy::Util::load_class('Data::Dumper') },
+        exception { Airy::Util::load_class('Benchmark') },
         undef,
         'load class'
     );
-    ok($INC{'Data/Dumper.pm'}, 'loaded');
+    ok($INC{'Benchmark.pm'}, 'loaded');
     isnt(
         exception { Airy::Util::load_class('Doesnt::Exists') },
         undef,
