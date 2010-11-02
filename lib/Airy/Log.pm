@@ -3,6 +3,7 @@ package Airy::Log;
 use strict;
 use warnings;
 use POSIX;
+use Data::Dumper ();
 use Log::Dispatch;
 use Airy::Config;
 
@@ -13,6 +14,11 @@ sub setup {
 
     *Log::Dispatch::warn  = *Log::Dispatch::warning;
     *Log::Dispatch::fatal = *Log::Dispatch::emergency;
+    *Log::Dispatch::dump  = sub {
+        my $self = shift;
+        local $Data::Dumper::Terse = 1;
+        $self->debug(Data::Dumper::Dumper \@_);
+    };
 
     my $config = Airy::Config->get('Log::Dispatch');
     unless ( $config ) {

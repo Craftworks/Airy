@@ -17,7 +17,8 @@ subtest 'class has logger' => sub {
     my $api = My::App->new->get('My::App::API');
     can_ok($api, 'log');
     my $logger = $api->log;
-    can_ok($logger, qw(debug info notice warn error critical alert fatal));
+    my @methods = qw(debug info notice warn error critical alert fatal dump);
+    can_ok($logger, @methods);
 };
 
 subtest 'logger config' => sub {
@@ -29,11 +30,16 @@ subtest 'logger config' => sub {
 
 subtest 'logger outputs' => sub {
     my $logger = My::App->new->get('My::App::API')->log;
+
     local *STDERR;
     open my $fh, '>', \my $buffer;
     *STDERR = $fh;
+
     $logger->info('foobarbaz');
     like($buffer, qr/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[info\] foobarbaz\n/, 'output');
+
+    $logger->dump($fh);
+    like($buffer, qr/\\\*{'::\$fh'}/, 'dump');
 };
 
 done_testing;
