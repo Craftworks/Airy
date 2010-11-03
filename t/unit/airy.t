@@ -22,6 +22,9 @@ use_ok('Airy');
     use Airy -app => ( 'config' => +{
         'Foo' => 'foo',
     });
+    package My::App::API::Foo;
+    use Airy;
+    use parent 'Airy::API';
 }
 
 subtest 'import' => sub {
@@ -31,12 +34,9 @@ subtest 'import' => sub {
 
 subtest 'context' => sub {
     my $app = My::App->new;
-    can_ok($app, 'root_dir');
-    can_ok($app, 'config');
-    can_ok($app, 'get');
+    can_ok($app, qw(root_dir config get api));
     my $api = $app->get('Foo');
-    can_ok($api, 'root_dir');
-    can_ok($api, 'config');
+    can_ok($api, qw(root_dir config));
 };
 
 subtest 'application class' => sub {
@@ -45,6 +45,11 @@ subtest 'application class' => sub {
 
 subtest 'specify config' => sub {
     is_deeply(Airy::Config->get_all, +{ 'Foo' => 'foo' });
+};
+
+subtest 'api' => sub {
+    my $app = My::App->new;
+    isa_ok($app->api('Foo'), 'Airy::API');
 };
 
 done_testing;
