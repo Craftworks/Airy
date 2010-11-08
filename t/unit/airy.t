@@ -19,9 +19,7 @@ use_ok('Airy');
 
 {
     package My::App;
-    use Airy -app => ( 'config' => +{
-        'Foo' => 'foo',
-    });
+    use Airy -app => ('Foo' => 'foo');
     package My::App::API::Foo;
     use Airy;
     use parent 'Airy::API';

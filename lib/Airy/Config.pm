@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use File::Spec;
 use Airy::Util;
+use Hash::Merge::Simple;
 
 my $vars = +{};
 
@@ -39,6 +40,12 @@ sub get {
 sub set {
     my $class = shift;
     @_ == 2 ? ( $vars->{ $_[0] } = $_[1] ) : ( $vars = $_[0] );
+}
+
+sub add {
+    my $class = shift;
+    my %config = @_ == 1 ? %{ +shift } : @_;
+    $vars = Hash::Merge::Simple::merge($vars, \%config);
 }
 
 1;

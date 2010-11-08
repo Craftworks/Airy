@@ -37,10 +37,11 @@ sub import {
             Airy::Container->get("$caller\::API::$name");
         };
 
-        my %args = @_;
-        $args{'config'}
-            ? Airy::Config->set($args{'config'})
-            : Airy::Config->load;
+        my %config = @_;
+        Airy::Config->load;
+        if ( %config ) {
+            Airy::Config->add(%config);
+        }
 
         Airy::Log->setup;
     }

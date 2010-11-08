@@ -6,6 +6,7 @@ author   'Craftworks <craftwork at cpan org>';
 license  'perl';
 
 requires 'parent';
+requires 'Hash::Merge::Simple';
 requires 'Log::Dispatch' => 2.26;
 requires 'DBIx::Connector';
 

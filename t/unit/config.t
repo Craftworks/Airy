@@ -21,6 +21,14 @@ subtest 'set' => sub {
     is_deeply($config->get('Foo'), +{ 'foo' => 2 }, 'set with name');
 };
 
+subtest 'add' => sub {
+    $config->add('Bar' => 'bar');
+    is_deeply($config->get('Bar'), 'bar', 'add config');
+    is_deeply($config->get('Foo'), +{ 'foo' => 2 }, 'config merged');
+    $config->add('Foo' => +{ 'bar' => 3 });
+    is_deeply($config->get('Foo'), +{ 'foo' => 2, 'bar' => 3 }, 'config merged');
+};
+
 subtest 'load' => sub {
     local $ENV{'AIRY_ENV'} = 'base';
     $config->set(+{});
