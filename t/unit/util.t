@@ -8,7 +8,7 @@ use Airy::Util;
 
 {
     package Foo;
-    use Airy;
+    use Airy -base;
 }
 
 subtest 'app_class' => sub {

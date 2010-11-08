@@ -11,6 +11,7 @@ BEGIN {
     use Airy -app;
     package My::App::API;
     use Airy;
+    use parent 'Airy::API';
 }
 
 subtest 'class has logger' => sub {

@@ -1,6 +1,6 @@
 package Airy::API;
 
-use Airy;
+use Airy -base;
 use Airy::Util;
 use Airy::Container;
 

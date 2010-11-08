@@ -9,7 +9,7 @@ local $ENV{'AIRY_HOME'} = 't';
     no warnings;
 
     package Foo;
-    use Airy;
+    use Airy -base;
 
     sub context  { _context() }
     sub _context { (caller(0))[8,9] }
@@ -34,7 +34,7 @@ subtest 'context' => sub {
     my $app = My::App->new;
     can_ok($app, qw(root_dir config get api));
     my $api = $app->get('Foo');
-    can_ok($api, qw(root_dir config));
+    can_ok($api, qw(config log));
 };
 
 subtest 'application class' => sub {
@@ -45,6 +45,11 @@ subtest 'specify config' => sub {
     my $app = My::App->new;
     is_deeply(Airy::Config->get_all, +{ 'Foo' => 'foo' });
     is_deeply($app->config, +{ 'Foo' => 'foo' }, 'app class config');
+};
+
+subtest 'add config' => sub {
+    my $app = My::App->new('Bar' => 'bar');
+    is_deeply($app->config, +{ 'Foo' => 'foo', 'Bar' => 'bar' }, 'merged');
 };
 
 subtest 'api' => sub {

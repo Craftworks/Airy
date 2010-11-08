@@ -11,6 +11,12 @@ BEGIN {
 }
 
 {
+    package My::App::DOD::DBI;
+    use Airy;
+    use parent 'Airy::DOD::DBI';
+}
+
+{
     Airy::Config->set({
         'DOD::DBI' => {
             'datasource' => [ 'dbi:File:', '', '', +{} ],
@@ -26,6 +32,12 @@ subtest 'instances' => sub {
     isa_ok($dbi, 'DBIx::Connector');
     isa_ok($dbi->dbh, 'DBI::db');
     isa_ok($dod->dbh, 'DBI::db');
+};
+
+subtest 'inheritance' => sub {
+    my $dod = new_ok('Airy::DOD::DBI');
+    isa_ok($dod, 'Airy::DOD::DBI');
+    is($Airy::DOD::DBI::ISA[0], 'Airy::DOD', 'single inheritance');
 };
 
 subtest 'datasource' => sub {

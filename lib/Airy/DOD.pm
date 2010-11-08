@@ -1,5 +1,5 @@
 package Airy::DOD;
 
-use Airy;
+use Airy -base;
 
 1;

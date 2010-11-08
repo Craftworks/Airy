@@ -19,17 +19,25 @@ sub import {
     strict->import;
     warnings->import;
 
-    no strict 'refs';
-    unshift @{"$caller\::ISA"}, 'Airy::Object';
-
-    my $root_dir = Airy::Util::class2dir($caller);
-    *{"$caller\::root_dir"} = sub { $root_dir };
+    if ( 0 < @_ && ( $_[0] eq '-base' || $_[0] eq '-app' ) ) {
+        no strict 'refs';
+        unshift @{"$caller\::ISA"}, 'Airy::Object';
+    }
 
     if ( 0 < @_ && $_[0] eq '-app' ) {
         shift;
 
         Airy::Util->app_class($caller);
+        my $root_dir = Airy::Util::class2dir($caller);
 
+        no strict 'refs';
+        *{"$caller\::new"} = sub {
+            my $class = shift;
+            Airy::Config->add(@_);
+            bless {}, $class;
+        };
+
+        *{"$caller\::root_dir"} = sub { $root_dir };
         *{"$caller\::config"} = *Airy::Config::get_all;
         *{"$caller\::get"} = *Airy::Container::get;
         *{"$caller\::api"} = sub {
@@ -44,6 +52,7 @@ sub import {
         }
 
         Airy::Log->setup;
+
     }
 }
 
