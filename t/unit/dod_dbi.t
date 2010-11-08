@@ -27,11 +27,10 @@ BEGIN {
 subtest 'instances' => sub {
     my $dod = new_ok('Airy::DOD::DBI');
     isa_ok($dod, 'Airy::DOD');
-    can_ok($dod, qw(datasource));
+    can_ok($dod, qw(dbi sql datasource));
     my $dbi = $dod->dbi;
     isa_ok($dbi, 'DBIx::Connector');
     isa_ok($dbi->dbh, 'DBI::db');
-    isa_ok($dod->dbh, 'DBI::db');
 };
 
 subtest 'inheritance' => sub {

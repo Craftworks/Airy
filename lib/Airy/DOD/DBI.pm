@@ -2,8 +2,10 @@ package Airy::DOD::DBI;
 
 use Airy;
 use parent 'Airy::DOD';
-use DBIx::Connector;
 use Data::Dumper;
+use DBIx::Connector;
+use SQL::Abstract::Limit;
+use SQL::Abstract::Plugin::InsertMulti;
 
 sub new {
     my $class = shift;
@@ -28,6 +30,9 @@ sub new {
     }
 
     $self->{'dbi'} = DBIx::Connector->new(@$connect_info);
+    $self->{'sql'} = SQL::Abstract::Limit->new(
+        'limit_dialect' => $config->{'limit_dialect'}
+    );
 
     return $self;
 }
@@ -36,8 +41,8 @@ sub dbi {
     shift->{'dbi'};
 }
 
-sub dbh {
-    shift->{'dbi'}->dbh;
+sub sql {
+    shift->{'sql'};
 }
 
 sub datasource {

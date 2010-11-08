@@ -9,6 +9,8 @@ requires 'parent';
 requires 'Hash::Merge::Simple';
 requires 'Log::Dispatch' => 2.26;
 requires 'DBIx::Connector';
+requires 'SQL::Abstract::Limit';
+requires 'SQL::Abstract::Plugin::InsertMulti';
 
 test_requires 'Test::More' => 0.96;
 test_requires 'Test::Fatal';
