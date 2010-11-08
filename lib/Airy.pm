@@ -30,6 +30,7 @@ sub import {
 
         Airy::Util->app_class($caller);
 
+        *{"$caller\::config"} = *Airy::Config::get_all;
         *{"$caller\::get"} = *Airy::Container::get;
         *{"$caller\::api"} = sub {
             my ($self, $name) = @_;

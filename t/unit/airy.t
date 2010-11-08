@@ -44,7 +44,9 @@ subtest 'application class' => sub {
 };
 
 subtest 'specify config' => sub {
+    my $app = My::App->new;
     is_deeply(Airy::Config->get_all, +{ 'Foo' => 'foo' });
+    is_deeply($app->config, +{ 'Foo' => 'foo' }, 'app class config');
 };
 
 subtest 'api' => sub {
