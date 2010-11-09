@@ -7,10 +7,13 @@ use Airy::Log;
 
 sub new {
     my $class = shift;
+    my %args  = ( @_ == 1 && ref $_[0] eq 'HASH' ) ? %{ +shift } : @_;
 
-    my %args = ( @_ == 1 && ref $_[0] eq 'HASH' ) ? %{ +shift } : @_;
+    my $self = bless \%args, $class;
 
-    bless \%args, $class;
+    $self->initialize(@_) if $self->can('initialize');
+
+    return $self;
 }
 
 sub config {

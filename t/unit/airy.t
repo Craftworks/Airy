@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Test::Fatal;
 
 local $ENV{'AIRY_HOME'} = 't';
 
@@ -21,6 +22,13 @@ use_ok('Airy');
     package My::App;
     use Airy -app => ('Foo' => 'foo');
     package My::App::API::Foo;
+    use Airy;
+    use parent 'Airy::API';
+    our $foo;
+    sub initialize {
+        $foo = 1;
+    }
+    package My::App::API::Bar;
     use Airy;
     use parent 'Airy::API';
 }
@@ -50,6 +58,14 @@ subtest 'specify config' => sub {
 subtest 'add config' => sub {
     my $app = My::App->new('Bar' => 'bar');
     is_deeply($app->config, +{ 'Foo' => 'foo', 'Bar' => 'bar' }, 'merged');
+};
+
+subtest 'run initializer' => sub {
+    my $app = My::App->new;
+    is(exception { $app->api('Bar') }, undef, 'live');
+    ok(!$My::App::API::Foo::foo, 'undef yet');
+    is(exception { $app->api('Foo') }, undef, 'live');
+    ok($My::App::API::Foo::foo, 'run initializer');
 };
 
 subtest 'api' => sub {
