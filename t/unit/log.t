@@ -4,6 +4,7 @@ use Test::More;
 
 BEGIN {
     use_ok('Airy::Log');
+    $ENV{'AIRY_LOG'} = 1;
 }
 
 {

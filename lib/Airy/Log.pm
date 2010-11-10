@@ -10,7 +10,7 @@ use Airy::Config;
 my $logger;
 
 sub setup {
-    my ( $class, ) = @_;
+    my $class = shift;
 
     *Log::Dispatch::warn  = *Log::Dispatch::warning;
     *Log::Dispatch::fatal = *Log::Dispatch::emergency;
@@ -41,7 +41,18 @@ sub setup {
         };
     }
 
-    $logger = Log::Dispatch->new(%$config);
+    if ( $ENV{'HARNESS_ACTIVE'} && !$ENV{'AIRY_LOG'} ) {
+        no strict 'refs';
+        no warnings 'redefine';
+        for (qw(dump warn fatal debug info notice
+                warning error critical alert emergency)) {
+            *{"Log::Dispatch::$_"} = sub {};
+        }
+        $logger = Log::Dispatch->new(%$config);
+    }
+    else {
+        $logger = Log::Dispatch->new(%$config);
+    }
 }
 
 sub logger {
