@@ -17,7 +17,8 @@ sub load {
     my $path = File::Spec->catfile($home, $conf, "$env.pl");
 
     if ( length $env ) {
-        $vars = do $path or die qq{Couldn't load configuration file "$path"};
+        $vars = do $path
+            or die qq{Couldn't load configuration file "$path": $!};
     }
     else {
         warn qq{configuration file was not specified\n}
