@@ -31,6 +31,7 @@ subtest 'instances' => sub {
     my $dbi = $dod->dbi;
     isa_ok($dbi, 'DBIx::Connector');
     isa_ok($dbi->dbh, 'DBI::db');
+    is($dbi->mode, 'fixup');
 };
 
 subtest 'inheritance' => sub {
