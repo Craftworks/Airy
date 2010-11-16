@@ -73,4 +73,9 @@ subtest 'api' => sub {
     isa_ok($app->api('Foo'), 'Airy::API');
 };
 
+subtest 'class method' => sub {
+    Airy::Config->add('API::Foo' => { 'foo' => 1 });
+    is_deeply(My::App::API::Foo->config, { 'foo' => 1 }, 'config');
+};
+
 done_testing;

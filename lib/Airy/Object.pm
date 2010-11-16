@@ -17,8 +17,9 @@ sub new {
 }
 
 sub config {
-    my $self = shift;
-    Airy::Config->get(ref $self);
+    my $self  = shift;
+    my $class = ref $self || $self;
+    Airy::Config->get($class);
 }
 
 sub log {
