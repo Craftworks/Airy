@@ -7,9 +7,14 @@ use Text::Xslate;
 sub initialize {
     my $self = shift;
 
+    unless ( $self->config ) {
+        $self->config({});
+    }
+
     $self->{'tx'} = Text::Xslate->new(
         'path' => [ 'template' ],
         %{ $self->config },
+        @_,
     );
 }
 
