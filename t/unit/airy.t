@@ -73,9 +73,13 @@ subtest 'api' => sub {
     isa_ok($app->api('Foo'), 'Airy::API');
 };
 
-subtest 'class method' => sub {
-    Airy::Config->add('API::Foo' => { 'foo' => 1 });
-    is_deeply(My::App::API::Foo->config, { 'foo' => 1 }, 'config');
+subtest 'config getter and setter' => sub {
+    is(My::App::API::Foo->config, undef, 'yet');
+    ok(My::App::API::Foo->config(1), 'class setter');
+    is(My::App::API::Foo->config, 1, 'class getter');
+    my $api = My::App->new->api('Foo');
+    ok($api->config(2), 'instance setter');
+    is($api->config, 2, 'instance getter');
 };
 
 done_testing;

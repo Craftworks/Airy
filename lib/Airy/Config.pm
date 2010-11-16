@@ -45,7 +45,15 @@ sub set {
 
 sub add {
     my $class = shift;
-    my %config = @_ == 1 ? %{ +shift } : @_;
+    my %args  = @_ == 1 ? %{ +shift } : @_;
+    my %config;
+
+    my $app_class = Airy::Util->app_class;
+    while ( my ($caller, $var) = each %args ) {
+        $caller =~ s/^$app_class\:://;
+        $config{ $caller } = $var;
+    }
+
     $vars = Hash::Merge::Simple::merge($vars, \%config);
 }
 
