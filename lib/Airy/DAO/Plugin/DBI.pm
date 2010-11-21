@@ -1,6 +1,7 @@
 package Airy::DAO::Plugin::DBI;
 
 use Airy;
+use Carp;
 
 sub import {
     my $class  = shift;
@@ -10,6 +11,12 @@ sub import {
 
     *{"$caller\::sql"} = sub {
         shift->dod('DBI')->{'sql'};
+    };
+
+    *{"$caller\::placeholders"} = sub {
+        shift if ref $_[0];
+        croak 'not enough arguments' unless @_;
+        join q{, }, (('?') x @_);
     };
 
     for my $method (qw(dbh mode run txn svp)) {
