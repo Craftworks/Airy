@@ -4,6 +4,7 @@ use Airy -base;
 use Airy::Container;
 use UNIVERSAL::require;
 use Module::Pluggable::Object;
+use Encode ();
 
 sub import {
     my $class  = shift;
@@ -12,6 +13,11 @@ sub import {
     $class->request_class->use or die $@;
     $class->response_class->use or die $@;
     $class->setup_view;
+}
+
+my $encoding = Encode::find_encoding('utf-8') or die $!;
+sub encoding {
+    $encoding;
 }
 
 sub request_class  { 'Plack::Request'  };
@@ -114,6 +120,7 @@ sub render {
         or die qq{view not found "$view_class"};
 
     my $body = $view->render($c->{'stash'}{'template'}, $c->{'stash'});
+    $body = $c->encoding->encode($body);
     $c->res->body($body);
 
     if ( $body =~ /^\s*<(?:!DOCTYPE|html)/io ) {
