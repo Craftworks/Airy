@@ -25,7 +25,11 @@ sub dispatch {
     if ( my $p = $class->router->match($c->{'request'}->env) ) {
         my ($controller, $action) = delete @$p{qw(controller action)};
 
-        $c->{'stash'}{'template'} = lc "$controller/$action";
+        my $path = lc "$controller/$action";
+        $path =~ s{::}{/}go;
+        $c->log->info("Path is $path");
+
+        $c->{'stash'}{'template'} = $path;
         $c->controller($controller)->$action($c, $p);
 
         return 1;

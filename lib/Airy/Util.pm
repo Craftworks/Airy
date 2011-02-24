@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Carp;
 use File::Spec;
+use UNIVERSAL::require;
 
 my $app_class;
 
@@ -41,8 +42,7 @@ sub is_class_loaded {
     sub load_class {
         my $class = shift;
         return $class if $loaded->{ $class }++;
-        eval "require $class" or confess $@;
-        $class->import;
+        $class->use or confess $@;
     }
 }
 

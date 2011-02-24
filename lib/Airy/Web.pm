@@ -2,31 +2,80 @@ package Airy::Web;
 
 use Airy -base;
 use Airy::Container;
+use Airy::Web::ActionClass;
 use UNIVERSAL::require;
 use Module::Pluggable::Object;
 use Encode ();
 
-sub import {
-    my $class  = shift;
-    my $caller = caller 0;
-
-    $class->request_class->use or die $@;
-    $class->response_class->use or die $@;
-    $class->setup_view;
-}
+our $COUNT = 1;
+our $START = time;
 
 my $encoding = Encode::find_encoding('utf-8') or die $!;
-sub encoding {
-    $encoding;
-}
+sub encoding { $encoding }
 
-sub request_class  { 'Plack::Request'  };
-sub response_class { 'Plack::Response' };
+sub request_class  { 'Plack::Request'  }
+sub response_class { 'Plack::Response' }
 
 sub request  { shift->{'request'}  }
 sub req      { shift->{'request'}  }
 sub response { shift->{'response'} }
 sub res      { shift->{'response'} }
+
+sub setup {
+    my ($class, $name) = @_;
+
+    no warnings 'once';
+    *name  = sub { $name };
+    *debug = sub { shift->{'debug'} };
+
+    $class->request_class->use  or die $@;
+    $class->response_class->use or die $@;
+    $class->setup_dispatcher;
+    $class->setup_controller;
+    $class->setup_view;
+    Airy::Web::ActionClass->setup;
+
+    return $class;
+}
+
+sub setup_dispatcher {
+    my $class = shift;
+
+    my $app_class   = Airy::Util->app_class;
+    my $name        = $class->name;
+    my $search_path = "$app_class\::Web::Dispatcher";
+    my $dispatcher  = "$search_path\::$name";
+
+    my @components  = Module::Pluggable::Object->new(
+        'search_path' => [ $search_path ],
+    )->plugins;
+    @components = grep /$dispatcher/o, @components;
+
+    for my $module ( @components ) {
+        $module->use or die $@;
+    }
+
+    no warnings 'once';
+    *dispatcher_class = sub { $dispatcher };
+}
+
+sub setup_controller {
+    my $class = shift;
+
+    my $app_class   = Airy::Util->app_class;
+    my $name        = $class->name;
+    my $search_path = "$app_class\::Web::Controller";
+    my $controller  = "$search_path\::$name";
+
+    my @components  = Module::Pluggable::Object->new(
+        'search_path' => [ $search_path ],
+    )->plugins;
+    @components = grep /$controller/o, @components;
+
+    for my $module ( @components ) {
+        $module->use or die $@;
+    }
+}
 
 sub setup_view {
     my $class = shift;
@@ -45,15 +94,16 @@ sub setup_view {
         $view_class{ $name } = $obj;
     }
 
+    no warnings 'once';
     *view_class = sub { \%view_class };
 }
 
 sub controller {
     my ($c, $module) = @_;
 
-    my $class = ref $c;
+    my $app_class = Airy::Util->app_class;
     my $name  = $c->{'name'};
-    my $controller = "$class\::Controller::$name\::$module";
+    my $controller = "$app_class\::Web::Controller::$module";
 
     Airy::Container->get($controller);
 }
@@ -65,45 +115,63 @@ sub api {
 }
 
 sub handler {
-    my ($class, $name) = @_;
-
-    my $request_class  = $class->request_class;
-    my $response_class = $class->response_class;
-    $request_class->use  or die $@;
-    $response_class->use or die $@;
-
-    my $dispatcher_class = "$class\::Dispatcher::$name";
-    $dispatcher_class->use or die $@;
+    my $class = shift;
 
     sub {
         my $env = shift;
-        my $req = $request_class->new($env);
-        my $res = $response_class->new(200);
-        my $stash = {};
 
-        my $c = $class->new(
-            'name'         => $name,
-            'request'      => $req,
-            'response'     => $res,
-            'stash'        => $stash,
+        my $secs = time - $START || 1;
+        my $avg  = sprintf '%.3f', $COUNT / $secs;
+        $class->log->info("*** Request $COUNT ($avg/s) [$$] ***");
+
+        no warnings 'once';
+        local $Airy::CONTEXT = my $c = $class->new(
+            'debug'        => ( $ENV{'PLACK_ENV'} eq 'development' ),
+            'name'         => $class->name,
+            'request'      => $class->request_class->new($env),
+            'response'     => $class->response_class->new(200),
+            'stash'        => +{},
         );
-
-        no warnings 'redefine';
-        local $Airy::CONTEXT = $c;
 
         $c->log->info(sprintf '"%s" request for "%s" from "%s"',
             @$env{qw(REQUEST_METHOD PATH_INFO REMOTE_ADDR)});
 
-        unless ( $dispatcher_class->dispatch($c) ) {
-            $c->response_404;
-        }
-
-        if ( $res->status !~ /^3/o && !defined $res->body ) {
+        eval {
+            $c->prepare;
+            $c->dispatch;
             $c->render;
+            $c->finalize;
+        };
+        if ( my $error = $@ ) {
+            $c->log->error(qq{Caught exception "$error"});
+            if ( !$c->{'debug'} ) {
+                $c->response_500($error);
+            }
+            else {
+                die $error;
+            }
         }
 
-        return $res->finalize;
+        $COUNT++;
+
+        return $c->res->finalize;
     };
+}
+
+sub prepare {
+    my $c = shift;
+}
+
+sub dispatch {
+    my $c = shift;
+
+    unless ( $c->dispatcher_class->dispatch($c) ) {
+        $c->response_404;
+    }
+}
+
+sub finalize {
+    my $c = shift;
 }
 
 sub response_404 {
@@ -112,20 +180,22 @@ sub response_404 {
     $c->{'response'}->body('404 Not Found');
 }
 
+sub response_500 {
+    my $c = shift;
+    $c->{'response'}->status(500);
+    $c->{'response'}->body('500 Internal Server Error');
+}
+
 sub render {
     my $c = shift;
+    my $res = $c->res;
+
+    return $c if ( index($res->status, '3') == 0 || defined $res->body );
 
     my $view_class = $c->{'stash'}{'view_class'} || 'Xslate';
-    my $view = $c->view_class->{ $view_class }
-        or die qq{view not found "$view_class"};
+    my $view = $c->view_class->{ $view_class } or die qq{view not found "$view_class"};
 
-    my $body = $view->render($c->{'stash'}{'template'}, $c->{'stash'});
-    $body = $c->encoding->encode($body);
-    $c->res->body($body);
-
-    if ( $body =~ /^\s*<(?:!DOCTYPE|html)/io ) {
-        $c->res->content_type('text/html');
-    }
+    $view->render_web($c->{'stash'});
 
     $c;
 }

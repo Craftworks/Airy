@@ -2,6 +2,7 @@ package Airy;
 
 use strict;
 use warnings;
+use UNIVERSAL::require;
 use Airy::Object;
 use Airy::Util;
 use Airy::Container;
@@ -16,8 +17,10 @@ sub import {
     my $class  = shift;
     my $caller = caller 0;
 
+    my @warnings = split /[=,]/o, $ENV{'AIRY_WARNINGS'} || '';
+
     strict->import;
-    warnings->import;
+    warnings->import(@warnings);
 
     if ( 0 < @_ && ( $_[0] eq '-base' || $_[0] eq '-app' ) ) {
         no strict 'refs';
@@ -43,6 +46,12 @@ sub import {
         *{"$caller\::api"} = sub {
             my ($self, $name) = @_;
             Airy::Container->get("$caller\::API::$name");
+        };
+        *{"$caller\::handler"} = sub {
+            my ($self, $name) = @_;
+            my $web_class = "$caller\::Web::$name";
+            $web_class->use or die $@;
+            $web_class->setup($name)->handler;
         };
 
         my %config = @_;

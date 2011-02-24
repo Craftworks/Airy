@@ -15,6 +15,7 @@ sub import {
 
     *{"$caller\::placeholders"} = sub {
         shift if ref $_[0];
+        @_ = @{$_[0]} if ref $_[0] eq 'ARRAY';
         croak 'not enough arguments' unless @_;
         join q{, }, (('?') x @_);
     };

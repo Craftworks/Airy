@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Airy::Config;
 use Airy::Log;
+use Airy::Attribute::Container;
 
 sub new {
     my $class = shift;
@@ -27,6 +28,12 @@ sub config {
 
 sub log {
     Airy::Log->logger;
+}
+
+sub MODIFY_CODE_ATTRIBUTES {
+    my ($pkg, $ref, @attrs) = @_;
+    Airy::Attribute::Container->set($pkg, $ref, @attrs);
+    return;
 }
 
 1;
