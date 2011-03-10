@@ -25,8 +25,9 @@ sub setup {
     my ($class, $name) = @_;
 
     no warnings 'once';
-    *name  = sub { $name };
-    *debug = sub { shift->{'debug'} };
+    *name    = sub { $name };
+    *name_lc = sub { lc $name };
+    *debug   = sub { shift->{'debug'} };
 
     $class->request_class->use  or die $@;
     $class->response_class->use or die $@;
