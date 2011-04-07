@@ -2,29 +2,27 @@ package Airy::DAO::Plugin::DBI;
 
 use Airy;
 use Carp;
+use Exporter::Lite;
+use Hash::MoreUtils;
 
-sub import {
-    my $class  = shift;
-    my $caller = caller 0;
+our @EXPORT = qw(slice_def sql placeholders mode dbh run txn svp);
 
-    no strict 'refs';
+sub sql  { shift->dod('DBI')->{'sql'} }
+sub mode { shift->dod('DBI')->{'dbi'}->mode(@_) }
+sub dbh  { shift->dod('DBI')->{'dbi'}->dbh(@_)  }
+sub run  { shift->dod('DBI')->{'dbi'}->run(@_)  }
+sub txn  { shift->dod('DBI')->{'dbi'}->txn(@_)  }
+sub svp  { shift->dod('DBI')->{'dbi'}->svp(@_)  }
 
-    *{"$caller\::sql"} = sub {
-        shift->dod('DBI')->{'sql'};
-    };
+sub placeholders {
+    @_ = @{ $_[0] } if ref $_[0] eq 'ARRAY';
+    croak 'not enough arguments' unless @_;
+    join q{, }, (('?') x @_);
+}
 
-    *{"$caller\::placeholders"} = sub {
-        shift if ref $_[0];
-        @_ = @{$_[0]} if ref $_[0] eq 'ARRAY';
-        croak 'not enough arguments' unless @_;
-        join q{, }, (('?') x @_);
-    };
-
-    for my $method (qw(dbh mode run txn svp)) {
-        *{"$caller\::$method"} = sub {
-            shift->dod('DBI')->{'dbi'}->$method(@_);
-        };
-    }
+{
+    no warnings 'once';
+    *slice_def = *Hash::MoreUtils::slice_def;
 }
 
 1;
