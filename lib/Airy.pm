@@ -2,12 +2,8 @@ package Airy;
 
 use strict;
 use warnings;
-use UNIVERSAL::require;
 use Airy::Object;
-use Airy::Util;
-use Airy::Container;
-use Airy::Config;
-use Airy::Log;
+use Airy::App;
 
 our $VERSION = '0.001';
 $VERSION = eval $VERSION;
@@ -22,46 +18,14 @@ sub import {
     strict->import;
     warnings->import(@warnings);
 
-    if ( 0 < @_ && ( $_[0] eq '-base' || $_[0] eq '-app' ) ) {
+    if ( 0 < @_ && $_[0] eq '-base' ) {
         no strict 'refs';
         unshift @{"$caller\::ISA"}, 'Airy::Object';
     }
-
-    if ( 0 < @_ && $_[0] eq '-app' ) {
-        shift;
-
-        Airy::Util->app_class($caller);
-        my $root_dir = Airy::Util::class2dir($caller);
-
+    elsif ( 0 < @_ && $_[0] eq '-app' ) {
         no strict 'refs';
-        *{"$caller\::new"} = sub {
-            my $class = shift;
-            Airy::Config->add(@_);
-            bless {}, $class;
-        };
-
-        *{"$caller\::root_dir"} = sub { $root_dir };
-        *{"$caller\::config"} = *Airy::Config::get_all;
-        *{"$caller\::get"} = *Airy::Container::get;
-        *{"$caller\::api"} = sub {
-            my ($self, $name) = @_;
-            Airy::Container->get("$caller\::API::$name");
-        };
-        *{"$caller\::handler"} = sub {
-            my ($self, $name) = @_;
-            my $web_class = "$caller\::Web::$name";
-            $web_class->use or die $@;
-            $web_class->setup($name)->handler;
-        };
-
-        my %config = @_;
-        Airy::Config->load;
-        if ( %config ) {
-            Airy::Config->add(%config);
-        }
-
-        Airy::Log->setup;
-
+        unshift @{"$caller\::ISA"}, 'Airy::App';
+        $caller->setup(@_[1 .. $#_]);
     }
 }
 
