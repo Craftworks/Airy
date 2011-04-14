@@ -6,9 +6,13 @@ use Airy::Web::ActionClass;
 use UNIVERSAL::require;
 use Module::Pluggable::Object;
 use Encode ();
+use I18N::LangTags ();
+use I18N::LangTags::Detect;
 
 our $COUNT = 1;
 our $START = time;
+
+my $is_i18n = 0;
 
 my $encoding = Encode::find_encoding('utf-8') or die $!;
 sub encoding { $encoding }
@@ -161,6 +165,26 @@ sub handler {
 
 sub prepare {
     my $c = shift;
+
+    my $lang = $c->detect_language;
+
+    if ( $is_i18n || Airy::Util::is_class_loaded("$Airy::APP_CLASS\::I18N") ) {
+        $c->{'stash'}{'language'} = $Airy::I18N::Lang = $lang;
+        $is_i18n = 1;
+    }
+}
+
+sub detect_language {
+    my $c = shift;
+
+    my $accept_language = $c->{'request'}{'env'}{'HTTP_ACCEPT_LANGUAGE'};
+    my $languages = [ I18N::LangTags::implicate_supers(
+        I18N::LangTags::Detect->http_accept_langs($accept_language)
+    ) ];
+
+    my ($lang) = $languages->[0] =~ /(\w+)/o;
+
+    return $lang;
 }
 
 sub dispatch {

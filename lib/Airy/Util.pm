@@ -10,7 +10,7 @@ my $app_class;
 
 sub app_class {
     my ($class, $name) = @_;
-    $name ? $app_class = $name : $app_class;
+    $name ? $Airy::APP_CLASS = $app_class = $name : $app_class;
 }
 
 sub class2dir($) {

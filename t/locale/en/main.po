@@ -1,0 +1,2 @@
+msgid "hello, %s %s!"
+msgstr "Hello, %s %s!"

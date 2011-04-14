@@ -2,9 +2,11 @@ package Airy::View::Xslate;
 
 use Airy;
 use base 'Airy::View';
-use Text::Xslate 'html_builder';
+use Text::Xslate qw/html_builder html_escape mark_raw/;
 use Class::Inspector;
 use HTML::FillInForm::Lite;
+
+my $app_class = Airy::Util::app_class;
 
 sub initialize {
     my $self = shift;
@@ -77,6 +79,12 @@ sub render_web {
     if ( $body =~ /^\s*<(?:!DOCTYPE|html)/io ) {
         $c->res->content_type('text/html');
     }
+}
+
+sub __function__ {
+    my ($format, @args) = @_;
+    html_escape $_ for @args;
+    mark_raw("$app_class\::I18N"->loc($format, @args));
 }
 
 sub __function_fillinform {
