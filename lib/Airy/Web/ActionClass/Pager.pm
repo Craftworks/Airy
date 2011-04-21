@@ -47,7 +47,6 @@ sub after  {
     $data{'href'} = $c->req->uri;
     $data{'href'} =~ s#https?://.+?/#/#o;
     $data{'href'} =~ s/&?page=[^&]*//go;
-    $data{'href'} =~ s/&/&amp;/go;
     $data{'href'} .= '?' if ( index($data{'href'}, '?') == -1 );
     my $start = $data{'current'} - 4;
     my $end   = $data{'current'} + 4;
@@ -58,7 +57,7 @@ sub after  {
     }
     $start = ($start <= 0) ? 1 : $start;
 
-    my $amp = ($data{'href'} =~ /\?$/o) ? '' : '&amp;';
+    my $amp = ($data{'href'} =~ /\?$/o) ? '' : '&';
     for my $i ( $start .. $end ) {
         push @{ $data{'pages'} }, +{
             'num'  => $i,
