@@ -1,8 +1,11 @@
 use strict;
 use warnings;
 use Test::More;
+use FindBin;
 
 BEGIN {
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = 'base';
     use_ok('Airy::API');
 }
 

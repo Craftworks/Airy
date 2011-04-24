@@ -3,9 +3,18 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 use Test::TCP;
+use FindBin;
 use Plack::Loader;
 use Airy::Config;
 use Airy::Util;
+
+BEGIN {
+    eval 'require WWW::Curl::Easy';
+    plan skip_all => 'this test requires WWW::Curl::Easy' if $@;
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = 'base';
+}
+
 use ok 'Airy::DOD::Solr';
 
 {

@@ -1,11 +1,15 @@
 use strict;
 use warnings;
 use Test::More;
+use FindBin;
 
 BEGIN {
-    use_ok('Airy::Log');
-    $ENV{'AIRY_LOG'} = 1;
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = 'base';
+    $ENV{'AIRY_LOG'}  = 1;
 }
+
+use ok 'Airy::Log';
 
 {
     package My::App;

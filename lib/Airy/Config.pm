@@ -2,6 +2,7 @@ package Airy::Config;
 
 use strict;
 use warnings;
+use Sys::Hostname;
 use File::Spec;
 use Airy::Util;
 use Hash::Merge::Simple;
@@ -14,9 +15,15 @@ sub load {
     my $env  = $ENV{'AIRY_ENV'} || $ENV{'PLACK_ENV'} || '';
     my $home = $ENV{'AIRY_HOME'} || '.';
     my $conf = $ENV{'AIRY_CONFIG_PATH'} || 'conf';
-    my $path = File::Spec->catfile($home, $conf, "$env.pl");
 
     if ( length $env ) {
+        my $path = File::Spec->catfile($home, $conf, "$env.pl");
+        $vars = do $path
+            or die qq{Couldn't load configuration file "$path": $!};
+    }
+    elsif ( my $hostname = (hostname() =~ /([a-zA-Z]+)/)[0] ) {
+        my $path = File::Spec->catfile($home, $conf, "$hostname.pl");
+        return unless -r $path;
         $vars = do $path
             or die qq{Couldn't load configuration file "$path": $!};
     }

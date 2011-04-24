@@ -2,8 +2,12 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Fatal;
+use FindBin;
 
-local $ENV{'AIRY_HOME'} = 't';
+BEGIN {
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = '';
+}
 
 {
     no strict;

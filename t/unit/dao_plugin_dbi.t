@@ -2,6 +2,12 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Fatal;
+use FindBin;
+
+BEGIN {
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = 'base';
+}
 
 {
     package My::App;

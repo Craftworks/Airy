@@ -4,6 +4,14 @@ use utf8;
 use Test::More;
 use FindBin;
 use Cwd;
+
+BEGIN {
+    eval 'require Locale::Maketext::Lexicon';
+    plan skip_all => 'this test requires Locale::Maketext::Lexicon' if $@;
+    $ENV{'AIRY_HOME'} = "$FindBin::Bin/..";
+    $ENV{'AIRY_ENV'}  = 'base';
+}
+
 use ok 'Airy::I18N';
 
 my $i18n = 'MyApp::I18N';
