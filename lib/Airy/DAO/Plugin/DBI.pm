@@ -3,6 +3,7 @@ package Airy::DAO::Plugin::DBI;
 use Airy;
 use Carp;
 use Exporter::Lite;
+use Scalar::Util 'blessed';
 use Hash::MoreUtils;
 
 our @EXPORT = qw(slice_def sql placeholders mode dbh run txn svp);
@@ -15,6 +16,7 @@ sub txn  { shift->dod('DBI')->{'dbi'}->txn(@_)  }
 sub svp  { shift->dod('DBI')->{'dbi'}->svp(@_)  }
 
 sub placeholders {
+    shift if blessed $_[0];
     @_ = @{ $_[0] } if ref $_[0] eq 'ARRAY';
     croak 'not enough arguments' unless @_;
     join q{, }, (('?') x @_);
