@@ -1,19 +1,16 @@
 package Airy::API;
 
 use Airy -base;
-use Airy::Util;
 use Airy::Container;
 
 sub api {
     my ($self, $name) = @_;
-    my $app_class = Airy::Util->app_class;
-    Airy::Container->get("$app_class\::API::$name");
+    Airy::Container->get("$Airy::APP_CLASS\::API::$name");
 }
 
 sub dao {
     my ($self, $name) = @_;
-    my $app_class = Airy::Util->app_class;
-    Airy::Container->get("$app_class\::DAO::$name");
+    Airy::Container->get("$Airy::APP_CLASS\::DAO::$name");
 }
 
 1;

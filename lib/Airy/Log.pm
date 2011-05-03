@@ -2,7 +2,7 @@ package Airy::Log;
 
 use strict;
 use warnings;
-use POSIX;
+use POSIX ();
 use Data::Dumper ();
 use Log::Dispatch;
 use Airy::Config;
@@ -12,11 +12,17 @@ my $logger;
 sub setup {
     my $class = shift;
 
+    {
+        no warnings 'redefine';
+        *Data::Dumper::qquote = sub { shift };
+    }
+
     *Log::Dispatch::warn  = *Log::Dispatch::warning;
     *Log::Dispatch::fatal = *Log::Dispatch::emergency;
     *Log::Dispatch::dump  = sub {
         my $self = shift;
         local $Data::Dumper::Terse = 1;
+        local $Data::Dumper::Useperl = 1;
         $self->debug(Data::Dumper::Dumper \@_);
     };
 
