@@ -37,7 +37,7 @@ sub setup {
 sub new {
     my $class = shift;
     Airy::Config->add(@_);
-    bless {}, $class;
+    $Airy::CONTEXT = bless {}, $class;
 }
 
 sub api {
