@@ -28,12 +28,21 @@ sub initialize {
         die "invalid connect_info.\n" . Dumper($connect_info);
     }
 
+    my $connect_opts = $connect_info->[3];
+    if ( !exists $connect_opts->{'RootClass'} ) {
+        $connect_opts->{'RootClass'} = 'Airy::DBI';
+    }
+
     $self->{'sql'} = SQL::Abstract::Limit->new(
         'limit_dialect' => $config->{'limit_dialect'}
     );
 
     $self->{'dbi'} = DBIx::Connector->new(@$connect_info);
     $self->{'dbi'}->mode('fixup');
+
+    *Airy::DOD::DBI::quote = sub {
+        $self->{'dbi'}->dbh->quote(@_);
+    };
 }
 
 sub dbi {
@@ -46,6 +55,55 @@ sub sql {
 
 sub datasource {
     shift->dbi->{'_args'};
+}
+
+package Airy::DBI;
+use parent 'DBI';
+
+package Airy::DBI::db;
+use vars '@ISA';
+@ISA = 'DBI::db';
+
+package Airy::DBI::st;
+
+use strict;
+use warnings;
+use vars '@ISA';
+use Time::HiRes qw(gettimeofday tv_interval);
+use POSIX 'strftime';
+@ISA = 'DBI::st';
+
+my $dod = "$Airy::APP_CLASS\::DOD::DBI";
+my $dod_config = Airy::Config->get($dod);
+my $fh = $dod_config->{'query_log'} || *STDOUT;
+
+*quote = *Airy::DOD::DBI::quote;
+
+sub execute {
+    my ($self, @args) = @_;
+
+    local $self->{'PrintError'} = 0;
+    my $time   = [gettimeofday];
+    my $rv     = $self->SUPER::execute(@args);
+    my $elapse = tv_interval($time, [gettimeofday]) || 0.000001;
+    my $qps    = 1 / $elapse;
+
+    my ($i, $stmt, @bind) = (0, $self->{'Statement'}, @args);
+
+    my $timestamp = strftime('%F %T', localtime);
+
+    $_ = quote($_) for @bind;
+    $stmt =~ s/\?/$bind[$i++]/g;
+    $stmt =~ tr/\x0A\x0D\t//d;
+
+    printf $fh "%s [query] (%.3fmsec/%.1fqps) %s;\n",
+        $timestamp, $elapse * 1000, $qps, $stmt;
+
+    unless ( $rv ) {
+        printf STDOUT 'execute failed: ' . $self->errstr;
+    }
+
+    return $rv;
 }
 
 1;
