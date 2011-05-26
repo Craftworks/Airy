@@ -93,6 +93,8 @@ sub loc {
     my ($format, @args) = @_;
 
     $format = $lexicon{ $Lang }{ $format } || $format;
+    @args = @{ $args[0] } if ( ref $args[0] eq 'ARRAY' );
+
     no warnings 'uninitialized';
     sprintf $format, @args;
 }
