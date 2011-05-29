@@ -100,7 +100,8 @@ sub execute {
         $timestamp, $elapse * 1000, $qps, $stmt;
 
     unless ( $rv ) {
-        printf STDOUT 'execute failed: ' . $self->errstr;
+        my $errstr = $self->errstr || '';
+        printf $fh "%s [query] execute failed: %s\n", $timestamp, $errstr;
     }
 
     return $rv;
