@@ -2,10 +2,18 @@ package Airy::DOD::DBI;
 
 use Airy;
 use parent 'Airy::DOD';
+use Carp;
 use Data::Dumper;
+use POSIX 'strftime';
+use Time::HiRes qw(gettimeofday tv_interval);
 use DBIx::Connector;
 use SQL::Abstract::Limit;
 use SQL::Abstract::Plugin::InsertMulti;
+
+my $log_fh;
+
+$Carp::CarpInternal{'Airy::DOD::DBI'}  = 1;
+$Carp::CarpInternal{'DBIx::Connector'} = 1;
 
 sub initialize {
     my $self = shift;
@@ -17,6 +25,8 @@ sub initialize {
         die sprintf "config->{'DOD::DBI'} must be defined for %s.\n%s",
             ref $self, Dumper(Airy::Config->get_all);
     }
+
+    $log_fh = $config->{'query_log'} || *STDOUT;
 
     my $connect_info = $config->{'datasource_key'}
         ? $config->{'datasources'}{ $config->{'datasource_key'} }
@@ -57,38 +67,19 @@ sub datasource {
     shift->dbi->{'_args'};
 }
 
-package Airy::DBI;
-use parent 'DBI';
+sub _execute_and_log {
+    my ($class, $obj, $code, $stmt, @args) = @_;
 
-package Airy::DBI::db;
-use vars '@ISA';
-@ISA = 'DBI::db';
-
-package Airy::DBI::st;
-
-use strict;
-use warnings;
-use vars '@ISA';
-use Time::HiRes qw(gettimeofday tv_interval);
-use POSIX 'strftime';
-@ISA = 'DBI::st';
-
-my $dod = "$Airy::APP_CLASS\::DOD::DBI";
-my $dod_config = Airy::Config->get($dod);
-my $fh = $dod_config->{'query_log'} || *STDOUT;
-
-*quote = *Airy::DOD::DBI::quote;
-
-sub execute {
-    my ($self, @args) = @_;
-
-    local $self->{'PrintError'} = 0;
+    local $obj->{'RaiseError'} = 0;
+    local $obj->{'PrintError'} = 0;
     my $time   = [gettimeofday];
-    my $rv     = $self->SUPER::execute(@args);
+    my $rv     = $code->();
+    my $error  = $obj->errstr;
     my $elapse = tv_interval($time, [gettimeofday]) || 0.000001;
     my $qps    = 1 / $elapse;
 
-    my ($i, $stmt, @bind) = (0, $self->{'Statement'}, @args);
+    shift @args if ref $args[0] eq 'HASH';
+    my ($i, @bind) = (0, @args);
 
     my $timestamp = strftime('%F %T', localtime);
 
@@ -96,15 +87,46 @@ sub execute {
     $stmt =~ s/\?/$bind[$i++]/g;
     $stmt =~ tr/\x0A\x0D\t//d;
 
-    printf $fh "%s [query] (%.3fmsec/%.1fqps) %s;\n",
+    printf $log_fh "%s [query] (%.3fmsec/%.1fqps) %s;\n",
         $timestamp, $elapse * 1000, $qps, $stmt;
 
-    unless ( $rv ) {
-        my $errstr = $self->errstr || '';
-        printf $fh "%s [query] execute failed: %s\n", $timestamp, $errstr;
+    if ( $error ) {
+        printf $log_fh "%s [query] execute failed: %s\n", $timestamp, $error;
+        croak $error;
     }
 
     return $rv;
+}
+
+package Airy::DBI;
+use parent 'DBI';
+
+package Airy::DBI::db;
+
+use strict;
+use warnings;
+use vars '@ISA';
+@ISA = 'DBI::db';
+
+sub do {
+    my ($self, @args) = @_;
+    Airy::DOD::DBI->_execute_and_log($self, sub {
+        $self->SUPER::do(@args);
+    }, @args);
+}
+
+package Airy::DBI::st;
+
+use strict;
+use warnings;
+use vars '@ISA';
+@ISA = 'DBI::st';
+
+sub execute {
+    my ($self, @args) = @_;
+    Airy::DOD::DBI->_execute_and_log($self, sub {
+        $self->SUPER::execute(@args);
+    }, $self->{'Statement'}, @args);
 }
 
 1;
