@@ -78,7 +78,6 @@ sub _execute_and_log {
     my $elapse = tv_interval($time, [gettimeofday]) || 0.000001;
     my $qps    = 1 / $elapse;
 
-    shift @args if ref $args[0] eq 'HASH';
     my ($i, @bind) = (0, @args);
 
     my $timestamp = strftime('%F %T', localtime);
@@ -110,9 +109,11 @@ use vars '@ISA';
 
 sub do {
     my ($self, @args) = @_;
+    my ($stmt, @bind) = @args;
+    shift @bind;
     Airy::DOD::DBI->_execute_and_log($self, sub {
         $self->SUPER::do(@args);
-    }, @args);
+    }, $stmt, @bind);
 }
 
 package Airy::DBI::st;
