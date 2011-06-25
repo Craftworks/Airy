@@ -13,6 +13,7 @@ our $COUNT = 1;
 our $START = time;
 
 my $is_i18n = 0;
+my $is_session = 0;
 
 my $encoding = Encode::find_encoding('utf-8') or die $!;
 sub encoding { $encoding }
@@ -171,6 +172,12 @@ sub prepare {
     if ( $is_i18n || Airy::Util::is_class_loaded("$Airy::APP_CLASS\::I18N") ) {
         $c->{'stash'}{'language'} = $Airy::I18N::Lang = $lang;
         $is_i18n = 1;
+    }
+
+    if ( $is_session || Airy::Util::is_class_loaded('Plack::Session') ) {
+        $c->{'session'} = Plack::Session->new($c->req->env);
+        $c->req->session_options->{'change_id'}++;
+        $is_session = 1;
     }
 }
 
