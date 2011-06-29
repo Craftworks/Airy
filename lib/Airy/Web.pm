@@ -167,9 +167,8 @@ sub handler {
 sub prepare {
     my $c = shift;
 
-    my $lang = $c->detect_language;
-
     if ( $is_i18n || Airy::Util::is_class_loaded("$Airy::APP_CLASS\::I18N") ) {
+        my $lang = $c->detect_language;
         $c->{'stash'}{'language'} = $Airy::I18N::Lang = $lang;
         $is_i18n = 1;
     }
@@ -188,6 +187,7 @@ sub detect_language {
     my $languages = [ I18N::LangTags::implicate_supers(
         I18N::LangTags::Detect->http_accept_langs($accept_language)
     ) ];
+    return Airy::I18N->default_lang unless @$languages;
 
     my ($lang) = $languages->[0] =~ /(\w+)/o;
 
